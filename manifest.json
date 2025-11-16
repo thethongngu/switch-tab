@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "name": "MRU Tab Switcher",
+  "version": "1.0.0",
+  "description": "Switch between most recently used tabs with a keyboard shortcut",
+  "permissions": ["tabs", "storage", "activeTab"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_page": "options.html",
+  "commands": {
+    "switch-to-previous-tab": {
+      "suggested_key": {
+        "default": "Alt+Q",
+        "mac": "Alt+Q"
+      },
+      "description": "Switch to previous tab in MRU list"
+    },
+    "switch-to-next-tab": {
+      "suggested_key": {
+        "default": "Alt+W",
+        "mac": "Alt+W"
+      },
+      "description": "Switch to next tab in MRU list"
+    },
+    "switch-to-last-tab": {
+      "suggested_key": {
+        "default": "Ctrl+Tab",
+        "mac": "MacCtrl+Tab"
+      },
+      "description": "Switch to last used tab"
+    },
+    "open-tab-switcher": {
+      "suggested_key": {
+        "default": "Alt+R",
+        "mac": "Alt+R"
+      },
+      "description": "Open tab switcher overlay"
+    }
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["overlay.css"],
+      "run_at": "document_end"
+    }
+  ]
+}
