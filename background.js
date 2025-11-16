@@ -86,8 +86,6 @@ chrome.commands.onCommand.addListener(async (command) => {
     await switchTab("next");
   } else if (command === "switch-to-last-tab") {
     await switchToLastTab();
-  } else if (command === "open-tab-switcher") {
-    await openTabSwitcher();
   }
 });
 
@@ -243,21 +241,6 @@ async function getMruListWithDetails() {
   }
 
   return tabDetails;
-}
-
-// Open tab switcher overlay
-async function openTabSwitcher() {
-  try {
-    const [tab] = await chrome.tabs.query({
-      active: true,
-      currentWindow: true,
-    });
-    if (tab) {
-      await chrome.tabs.sendMessage(tab.id, { action: "showTabSwitcher" });
-    }
-  } catch (error) {
-    console.error("Error opening tab switcher:", error);
-  }
 }
 
 // Switch to tab by ID
