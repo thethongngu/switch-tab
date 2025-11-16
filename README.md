@@ -5,14 +5,13 @@ A Chrome extension that helps you switch between most recently used (MRU) tabs u
 ## Features
 
 - 🔄 **MRU Tab List**: Automatically tracks your most recently used tabs
+- 🪟 **Window-Aware**: Each browser window maintains its own independent MRU list
+- 💾 **Intelligent Caching**: Automatically caches tab lists for reliability and fast recovery
 - ⌨️ **Keyboard Shortcuts**: Quick tab switching with customizable hotkeys
 - 🎯 **Intuitive Navigation**: Cycle forward and backward through your tab history
 - 📋 **Visual Tab List**: Click the extension icon to see all tabs in MRU order
-- 🪟 **Overlay Tab Switcher**: Beautiful centered overlay to view and select tabs (Alt+R)
-- 🎨 **Clean UI**: Modern, user-friendly interface with dark mode support
-  </text>
-
-<old_text line=28>
+- 🛡️ **Self-Healing**: Automatic validation and recovery when tab lists get out of sync
+- 🎨 **Clean UI**: Modern, user-friendly interface with window information display
 
 ### Default Keyboard Shortcuts
 
@@ -74,24 +73,50 @@ Click the extension icon to:
 - Click any tab to switch to it directly
 - Access keyboard shortcut configuration
 
+## Window-Aware Functionality
+
+The extension now maintains **separate MRU lists for each browser window**:
+
+- Each window has its own independent tab history
+- Tab switching operations are isolated per window
+- Multi-window workflows are fully supported
+- Window information is displayed in the popup
+
+### Intelligent Caching & Recovery
+
+The extension includes robust reliability features:
+
+- **Automatic Caching**: Every MRU list update is saved to session storage
+- **Validation**: Continuously checks that the list matches actual open tabs
+- **Auto-Recovery**: Automatically fixes issues by recovering from cache or rebuilding
+- **Manual Controls**: Refresh and rebuild buttons in the popup for manual intervention
+
+When the number of tabs doesn't match the list, the extension:
+
+1. First tries to recover from the cached list
+2. If cache is also invalid, rebuilds the list from scratch
+3. Saves the corrected list back to cache
+
+See [WINDOW-AWARE.md](WINDOW-AWARE.md) for detailed technical documentation.
+
 ## Technical Details
 
 - **Manifest Version**: 3 (latest Chrome extension format)
 - **Permissions**: Tabs, Storage, ActiveTab, Host Permissions
 - **Background**: Service worker for efficient resource usage
-- **Content Scripts**: Injected overlay UI for visual tab switching
-- **MRU List**: Maintains up to 100 most recently used tabs
+- **Storage**: Session storage for per-window MRU list caching
+- **MRU Lists**: Maintains up to 100 most recently used tabs per window
+- **Validation**: Automatic integrity checks with recovery mechanisms
 
 ## Development
 
 The extension consists of:
 
 - `manifest.json`: Extension configuration
-- `background.js`: Core MRU tracking and tab switching logic
-- `popup.html/js`: Extension popup interface
+- `background.js`: Window-aware MRU tracking, caching, and recovery logic
+- `popup.html/js`: Extension popup interface with window info and controls
 - `options.html/js`: Settings page
-- `content.js`: Overlay UI logic and keyboard navigation
-- `overlay.css`: Beautiful styling for the tab switcher overlay
+- `WINDOW-AWARE.md`: Detailed technical documentation
 
 ## License
 

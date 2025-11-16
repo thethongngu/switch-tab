@@ -2,6 +2,67 @@
 
 All notable changes to the MRU Tab Switcher extension will be documented in this file.
 
+## [1.2.0] - 2024-12-XX
+
+### Added
+
+- **🪟 Window-Aware MRU Lists** - Each browser window now maintains its own independent MRU tab list
+  - Tab switching operations are isolated per window
+  - Multi-window workflows fully supported
+  - No interference between windows when switching tabs
+- **💾 Intelligent Caching System** - Robust caching for reliability and fast recovery
+  - Automatic caching of MRU lists to session storage on every update
+  - Fast initialization from cache when extension starts
+  - Per-window cache keys for complete isolation
+- **🛡️ Validation & Auto-Recovery** - Self-healing mechanisms to maintain data integrity
+  - Continuous validation that MRU list matches actual open tabs
+  - Automatic detection when list gets out of sync
+  - Three-tier recovery: current list → cached list → rebuild from scratch
+  - Validates tab count, existence, and completeness
+- **🎛️ Manual Controls** - New UI controls in popup
+  - **Refresh Button** - Manually reload the current MRU list
+  - **Rebuild Button** - Force complete rebuild of the list from scratch
+  - Window information display showing window ID and tab count
+- **📊 Enhanced Event Handling**
+  - Tracks tab creation and adds to window's MRU list
+  - Handles window creation and initializes new lists
+  - Cleans up data and cache when windows are closed
+  - Improved tab removal handling with cache updates
+
+### Changed
+
+- Refactored `background.js` to support window-aware architecture
+  - Changed from single `mruTabList` to `mruTabLists` object (per-window)
+  - All navigation state now tracked per window
+  - Updated all functions to accept and use `windowId` parameter
+- Updated `popup.js` to request and display window-specific data
+  - Shows current window ID and tab count
+  - Added refresh and rebuild functionality
+  - Better error handling with window context
+- Enhanced `popup.html` with new UI elements
+  - Window info display area
+  - Action buttons for refresh and rebuild
+  - Improved layout and styling
+
+### Technical Details
+
+- **Data Structure**: Separate MRU arrays per window ID
+- **Cache Storage**: Uses `chrome.storage.session` with keys `mru_cache_{windowId}`
+- **Validation Logic**: Three-way validation (count, existence, completeness)
+- **Recovery Strategy**: Cached fallback with automatic rebuild
+- **Event Listeners**: Window-aware handlers for all tab/window events
+- **Performance**: Minimal overhead with async cache operations
+- **Memory Management**: Automatic cleanup on window close
+
+### Documentation
+
+- Added comprehensive `WINDOW-AWARE.md` technical documentation
+  - Detailed explanation of window-aware architecture
+  - Caching and recovery mechanisms
+  - API documentation and examples
+  - Debugging guide and best practices
+- Updated `README.md` with new features overview
+
 ## [1.1.0] - 2024-11-16
 
 ### Added
@@ -11,20 +72,17 @@ All notable changes to the MRU Tab Switcher extension will be documented in this
   - Beautiful, modern UI with smooth animations
   - Shows tab icons, titles, and URLs in a clean list
   - Dark mode support that respects system preferences
-  
 - **Keyboard Navigation in Overlay**
   - **↑/↓ Arrow Keys** - Navigate through the tab list
   - **Enter** - Switch to the selected tab
   - **Esc** - Close the overlay
   - **Home/End** - Jump to first/last tab
   - **1-9 Number Keys** - Quick jump to tabs by position
-  
 - **Visual Indicators**
   - Blue highlight for currently selected tab
   - Green "ACTIVE" badge for your current tab
   - Yellow background for active tab
   - Smooth scrolling to keep selected item in view
-  
 - **Mouse Support**
   - Click any tab in the overlay to switch to it
   - Click outside overlay to close it

@@ -37,6 +37,16 @@
                 color: #1a73e8;
             }
 
+            .window-info {
+                font-size: 12px;
+                color: #666;
+                margin-bottom: 8px;
+                padding: 4px 8px;
+                background-color: #f5f5f5;
+                border-radius: 3px;
+                display: inline-block;
+            }
+
             .tab-list {
                 max-height: 300px;
                 overflow-y: auto;
@@ -101,6 +111,32 @@
                 text-align: right;
             }
 
+            .action-buttons {
+                display: flex;
+                gap: 8px;
+                margin-top: 12px;
+                margin-bottom: 12px;
+            }
+
+            .action-button {
+                flex: 1;
+                padding: 6px 12px;
+                background-color: #fff;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 12px;
+                color: #333;
+                transition: all 0.2s;
+                text-decoration: none;
+                text-align: center;
+            }
+
+            .action-button:hover {
+                background-color: #f5f5f5;
+                border-color: #1a73e8;
+            }
+
             .settings-link {
                 display: block;
                 margin-top: 16px;
@@ -130,12 +166,23 @@
             • <strong>Alt+W</strong> - Switch to next tab
         </div>
 
+        <div>
+            <span id="windowInfo" class="window-info">Loading...</span>
+        </div>
+
         <h2 style="font-size: 14px; font-weight: 600; margin: 0 0 8px 0">
             Most Recently Used Tabs:
         </h2>
 
         <div id="tabList" class="tab-list">
             <div class="empty-state">Loading tabs...</div>
+        </div>
+
+        <div class="action-buttons">
+            <button id="refreshButton" class="action-button">🔄 Refresh</button>
+            <button id="rebuildButton" class="action-button">
+                🔧 Rebuild List
+            </button>
         </div>
 
         <a href="#" id="settingsLink" class="settings-link"

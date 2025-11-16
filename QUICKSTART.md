@@ -3,6 +3,7 @@
 ## 🚀 Get Started in 30 Seconds
 
 ### Install
+
 1. Open Chrome → `chrome://extensions/`
 2. Enable **Developer mode** (top-right toggle)
 3. Click **Load unpacked** → Select the `switch-tab` folder
@@ -10,38 +11,48 @@
 
 ### Try It Now
 
-Open a few tabs, then press:
+Open 5-6 tabs in your current window, then press:
 
-**Alt+R** (Option+R on Mac) 🎯
+**Alt+Q** - Cycle to your previously used tab!
 
-A beautiful overlay will appear showing all your tabs!
+Keep pressing **Alt+Q** to cycle backward through your tab history.
 
-### Navigate the Overlay
+### Keyboard Shortcuts
 
-- **↑ ↓** - Move up/down
-- **Enter** - Switch to selected tab
-- **Esc** - Close overlay
-- **1-9** - Jump to tab by number
-- **Click** - Select any tab with mouse
-
-### Other Shortcuts
-
-- **Alt+Q** - Switch to previous tab
-- **Alt+W** - Switch to next tab
+- **Alt+Q** - Switch to previous tab (most recent first)
+- **Alt+W** - Switch to next tab (reverse direction)
 - **Ctrl+Tab** - Toggle to last used tab
+
+### View Your Tab List
+
+Click the extension icon to see:
+
+- All tabs in **most recently used order**
+- Which window you're in
+- Click any tab to switch to it instantly
+
+## 🪟 Window-Aware
+
+**Important:** Each browser window has its own tab list!
+
+- Shortcuts only affect tabs in the **current window**
+- Open multiple windows? Each tracks its own history
+- Switch windows (Alt+Tab), then switch tabs (Alt+Q)
 
 ## That's It!
 
 You're ready to switch tabs like a pro! 🎉
 
-For more details, see [INSTALL.md](INSTALL.md) and [README.md](README.md).
+For more details, see [README.md](README.md) and [WINDOW-AWARE.md](WINDOW-AWARE.md).
 
 ---
 
 ### Quick Tips
 
-💡 **Can't see the overlay?** Make sure you're not on a chrome:// page
+💡 **Multi-window user?** Remember to focus the window first, then use tab shortcuts
 
-💡 **Shortcuts not working?** Customize them at `chrome://extensions/shortcuts`
+💡 **List looks wrong?** Click the extension icon → **🔄 Refresh** or **🔧 Rebuild**
 
-💡 **Want a different shortcut?** Click the extension icon → ⚙️ Configure Shortcuts
+💡 **Customize shortcuts?** Go to `chrome://extensions/shortcuts`
+
+💡 **How it works:** The extension remembers which tabs you use most and makes them easy to reach!
