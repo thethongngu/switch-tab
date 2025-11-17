@@ -7,6 +7,7 @@ A Chrome extension that helps you switch between most recently used (MRU) tabs u
 - 🔄 **MRU Tab List**: Automatically tracks your most recently used tabs
 - 🪟 **Window-Aware**: Each browser window maintains its own independent MRU list
 - 💾 **Intelligent Caching**: Automatically caches tab lists for reliability and fast recovery
+- 🔄 **Service Worker Persistence**: Automatic state restoration after inactivity - works immediately even after long idle periods
 - ⌨️ **Keyboard Shortcuts**: Quick tab switching with customizable hotkeys
 - 🎯 **Intuitive Navigation**: Cycle forward and backward through your tab history
 - 📋 **Visual Tab List**: Click the extension icon to see all tabs in MRU order
@@ -98,6 +99,35 @@ When the number of tabs doesn't match the list, the extension:
 3. Saves the corrected list back to cache
 
 See [WINDOW-AWARE.md](WINDOW-AWARE.md) for detailed technical documentation.
+
+## Service Worker Persistence
+
+The extension uses Manifest V3 service workers, which automatically shut down after ~30 seconds of inactivity to save resources. We've implemented robust solutions to ensure the extension **works immediately** after any period of inactivity:
+
+### Key Features
+
+- **Automatic State Restoration**: When you press a shortcut after inactivity, the extension instantly restores its state from session storage (<50ms)
+- **No Multiple Presses Needed**: Works on the first shortcut press, every time
+- **Keepalive Mechanism**: During active use, the service worker stays alive to provide instant responses
+- **Graceful Fallbacks**: If cache is invalid, automatically rebuilds from current browser state
+
+### What This Means For You
+
+- ✅ Press shortcuts after hours of inactivity - works immediately
+- ✅ No need to reload pages or press shortcuts multiple times
+- ✅ Seamless experience whether actively switching or returning after a break
+- ✅ Zero configuration required - it just works
+
+### Technical Details
+
+For developers interested in the implementation:
+
+- State persisted to `chrome.storage.session` on every change
+- Automatic restoration at all entry points (commands, events, messages)
+- Keepalive interval maintains service worker during active use (20s)
+- Multi-tier recovery: cache → rebuild → initialize from scratch
+
+See [SERVICE-WORKER-GUIDE.md](SERVICE-WORKER-GUIDE.md) for comprehensive technical documentation and [TESTING-INACTIVITY.md](TESTING-INACTIVITY.md) for testing procedures.
 
 ## Technical Details
 

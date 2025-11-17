@@ -5,18 +5,89 @@ let currentMruIndex = {}; // { windowId: number }
 let navigationTimer = {}; // { windowId: timer }
 
 const CACHE_KEY_PREFIX = "mru_cache_";
+const NAV_STATE_KEY = "navigation_state";
 const NAVIGATION_TIMEOUT = 1000; // 1 second
+const KEEPALIVE_INTERVAL = 20000; // 20 seconds
+
+let keepAliveInterval = null;
 
 // Initialize the extension
 chrome.runtime.onInstalled.addListener(async () => {
   console.log("MRU Tab Switcher installed");
+  await restoreStateFromStorage();
   await initializeAllWindows();
+  startKeepalive();
 });
 
 // Initialize MRU lists when the extension starts
 chrome.runtime.onStartup.addListener(async () => {
+  await restoreStateFromStorage();
   await initializeAllWindows();
+  startKeepalive();
 });
+
+// Restore state when service worker wakes up from inactivity
+async function restoreStateFromStorage() {
+  try {
+    console.log("Restoring state from storage...");
+
+    // Restore navigation state
+    const navState = await chrome.storage.session.get(NAV_STATE_KEY);
+    if (navState && navState[NAV_STATE_KEY]) {
+      const state = navState[NAV_STATE_KEY];
+      isNavigating = state.isNavigating || {};
+      currentMruIndex = state.currentMruIndex || {};
+      console.log("Restored navigation state:", state);
+    }
+
+    // Restore MRU lists from cache
+    const allStorage = await chrome.storage.session.get(null);
+    for (const key in allStorage) {
+      if (key.startsWith(CACHE_KEY_PREFIX)) {
+        const windowId = parseInt(key.replace(CACHE_KEY_PREFIX, ""));
+        mruTabLists[windowId] = allStorage[key];
+        console.log(`Restored MRU list for window ${windowId}`);
+      }
+    }
+
+    console.log("State restoration complete");
+  } catch (error) {
+    console.error("Error restoring state:", error);
+  }
+}
+
+// Save navigation state to storage
+async function saveNavigationState() {
+  try {
+    await chrome.storage.session.set({
+      [NAV_STATE_KEY]: {
+        isNavigating,
+        currentMruIndex,
+      },
+    });
+  } catch (error) {
+    console.error("Error saving navigation state:", error);
+  }
+}
+
+// Keepalive to prevent service worker from shutting down during active use
+function startKeepalive() {
+  if (keepAliveInterval) {
+    clearInterval(keepAliveInterval);
+  }
+
+  // Keep the service worker alive by periodically checking windows
+  keepAliveInterval = setInterval(async () => {
+    try {
+      // This lightweight operation keeps the service worker active
+      await chrome.windows.getAll({ populate: false });
+    } catch (error) {
+      console.error("Keepalive error:", error);
+    }
+  }, KEEPALIVE_INTERVAL);
+
+  console.log("Keepalive started");
+}
 
 // Initialize MRU lists for all windows
 async function initializeAllWindows() {
@@ -154,6 +225,11 @@ async function clearCacheForWindow(windowId) {
 
 // Track tab activation
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
+  // Ensure state is restored if service worker just woke up
+  if (Object.keys(mruTabLists).length === 0) {
+    await restoreStateFromStorage();
+  }
+
   const windowId = activeInfo.windowId;
 
   if (isNavigating[windowId]) {
@@ -277,6 +353,17 @@ chrome.windows.onRemoved.addListener(async (windowId) => {
 chrome.commands.onCommand.addListener(async (command) => {
   console.log("Command received:", command);
 
+  // Ensure state is restored if service worker just woke up
+  if (Object.keys(mruTabLists).length === 0) {
+    console.log("Service worker was inactive, restoring state...");
+    await restoreStateFromStorage();
+
+    // If still empty, initialize
+    if (Object.keys(mruTabLists).length === 0) {
+      await initializeAllWindows();
+    }
+  }
+
   // Get the current window
   const window = await chrome.windows.getCurrent();
   const windowId = window.id;
@@ -302,6 +389,7 @@ async function switchTab(windowId, direction) {
     if (!isNavigating[windowId]) {
       isNavigating[windowId] = true;
       currentMruIndex[windowId] = 0;
+      await saveNavigationState();
     }
 
     // Clear the existing timer
@@ -354,9 +442,13 @@ async function switchTab(windowId, direction) {
     navigationTimer[windowId] = setTimeout(() => {
       finishNavigation(windowId);
     }, NAVIGATION_TIMEOUT);
+
+    // Save navigation state
+    await saveNavigationState();
   } catch (error) {
     console.error(`Error switching tab in window ${windowId}:`, error);
     isNavigating[windowId] = false;
+    await saveNavigationState();
   }
 }
 
@@ -423,21 +515,31 @@ async function finishNavigation(windowId) {
   currentMruIndex[windowId] = 0;
   navigationTimer[windowId] = null;
 
+  // Save navigation state
+  await saveNavigationState();
+
   console.log(`Final MRU list for window ${windowId}:`, mruTabLists[windowId]);
 }
 
 // Handle messages from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "getMruList") {
-    getMruListWithDetails(request.windowId).then(sendResponse);
-    return true; // Will respond asynchronously
-  } else if (request.action === "switchToTab") {
-    switchToTabById(request.tabId).then(sendResponse);
-    return true; // Will respond asynchronously
-  } else if (request.action === "rebuildMruList") {
-    rebuildMruListForWindow(request.windowId).then(sendResponse);
-    return true; // Will respond asynchronously
-  }
+  // Ensure state is restored if service worker just woke up
+  const handleRequest = async () => {
+    if (Object.keys(mruTabLists).length === 0) {
+      await restoreStateFromStorage();
+    }
+
+    if (request.action === "getMruList") {
+      return await getMruListWithDetails(request.windowId);
+    } else if (request.action === "switchToTab") {
+      return await switchToTabById(request.tabId);
+    } else if (request.action === "rebuildMruList") {
+      return await rebuildMruListForWindow(request.windowId);
+    }
+  };
+
+  handleRequest().then(sendResponse);
+  return true; // Will respond asynchronously
 });
 
 // Get MRU list with tab details for a specific window
